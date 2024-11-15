@@ -177,7 +177,7 @@ with st.expander("Haz clic para expandir y ver la aplicación de salud completa"
 
 
     ######################################## --- Sección para cargar los archivos de la compañía --- ############################3
-    st.header('Carga de archivos de la compañía')
+    st.header('Carga de archivos de salud de la compañía')
 
     salud_exposicion_plus65 = st.file_uploader("Importar SALUD Exposición +65 (Excel)", type=['xlsx'], key='salud_exposicion_plus65')
     salud_exposicion_minus65 = st.file_uploader("Importar SALUD Exposición -65 (Excel)", type=['xlsx'], key='salud_exposicion_minus65')
@@ -198,7 +198,7 @@ with st.expander("Haz clic para expandir y ver la aplicación de salud completa"
 
     #################################### VISUALIZAR ###############################################3
 
-    st.header('Visualizar DataFrames')
+    st.header('Visualizar DataFrames Salud')
 
     # Claves para archivos base y archivos de la compañía
     claves_archivos_base = list(archivos_base.keys())  
@@ -216,7 +216,7 @@ with st.expander("Haz clic para expandir y ver la aplicación de salud completa"
     selected_df_name = st.selectbox('Selecciona un DataFrame para visualizar:', dataframes_disponibles)
 
     # Acción del botón para mostrar el DataFrame seleccionado
-    if st.button('Mostrar DataFrame'):
+    if st.button('Mostrar DataFrame Salud'):
         if selected_df_name in st.session_state['archivos_base']:
             st.write(f"DataFrame {selected_df_name}:")
             st.dataframe(st.session_state['archivos_base'][selected_df_name])
@@ -317,11 +317,11 @@ with st.expander("Haz clic para expandir y ver la aplicación de salud completa"
         except Exception as e:
             st.error(f"Se ha producido un error durante el cálculo de las proyecciones: {e}")
 
-    if st.button('Calcular Proyecciones'):
+    if st.button('Calcular Proyecciones Salud'):
         ejecutar_calculos()
 
 
-    st.header('Guardar Resultados en Streamlit')
+    st.header('Guardar Resultados de Salud en Streamlit')
 
     def guardar_resultados_streamlit():
         try:
@@ -386,14 +386,14 @@ with st.expander("Haz clic para expandir y ver la aplicación de salud completa"
         except Exception as e:
             st.error(f"Se ha producido un error durante el cálculo de las proyecciones: {e}")
 
-    if st.button('Guardar Resultados en Streamlit'):
+    if st.button('Guardar Resultados de Salud en Streamlit'):
         guardar_resultados_streamlit()
 
     ########### Visualizar Output ##################3
 
     import matplotlib.pyplot as plt
 
-    st.header('Visualización de Resultados en Gráfico')
+    st.header('Visualización de Resultados de Salud en Gráfico')
 
     opciones_resultados = [
         'Resultados_Directo_Mas65',
@@ -417,7 +417,7 @@ with st.expander("Haz clic para expandir y ver la aplicación de salud completa"
         '#c39bd3',  # Morado pálido
     ]
 
-    opcion_seleccionada = st.selectbox('Seleccione un resultado para visualizar en gráfico:', opciones_resultados)
+    opcion_seleccionada = st.selectbox('Seleccione un resultado de salud para visualizar en gráfico:', opciones_resultados)
 
     # Almacenaremos la figura creada para poder cerrarla después de mostrarla. Esto previene el error 'RuntimeError: main thread is not in main loop' de Tkinter.
     fig = plt.figure(figsize=(10, 5))
