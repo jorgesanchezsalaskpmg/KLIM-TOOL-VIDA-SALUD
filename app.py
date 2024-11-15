@@ -84,87 +84,96 @@ def calcular_ajustes_y_proyecciones(df_exposicion_compania, df_exposicion_base_d
 
     return df_salud_ola_calor_ajustada
 
-# Crear un expander que inicialmente está cerrado
-with st.expander("Haz clic para expandir y ver la aplicación de salud completa", expanded=False):
-
-    st.title("KLIM TOOL SALUD")
-
-    st.image('logo.PNG', width=120)
 ##################################### --- Sección para cargar los archivos base --- ###################################################
 
 
 # Definición de la función para generar la clave de encriptación
 # Definición de la función para generar la clave de encriptación
 # Definición de la función para generar la clave de encriptación
-    def generate_key_from_password(password, salt):
-        kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256(),
-            length=32,
-            salt=salt,
-            iterations=100000,
-            backend=default_backend()
-        )
-        generated_key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
-        return generated_key
+def generate_key_from_password(password, salt):
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
+    generated_key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
+    return generated_key
 
 # Función para desencriptar los datos
-    def decrypt_file(encrypted_data, key):
-        fernet = Fernet(key)
-        try:
-            decrypted_data = fernet.decrypt(encrypted_data)
-            return decrypted_data
-        except Exception as e:
-            st.error(f"No se pudo desencriptar el archivo: {e}")
-            return None
+def decrypt_file(encrypted_data, key):
+    fernet = Fernet(key)
+    try:
+        decrypted_data = fernet.decrypt(encrypted_data)
+        return decrypted_data
+    except Exception as e:
+        st.error(f"No se pudo desencriptar el archivo: {e}")
+        return None
 
-    # Diccionario con la correspondencia entre la descripción de los archivos y sus nombres
-    archivos_base = {
-        "SALUD DIRECTO +65": "SALUD DIRECTO +65.xlsx",
-        "SALUD DIRECTO -65": "SALUD DIRECTO -65.xlsx",
-        "SALUD INDIRECTO": "SALUD INDIRECTO.xlsx",
-        "SALUD OLA CALOR +65": "SALUD OLA CALOR +65.xlsx",
-        "SALUD OLA CALOR -65": "SALUD OLA CALOR -65.xlsx",
-        "SALUD OLA CALOR Exposición Base Daño +65": "SALUD OLA CALOR Exposición Base Daño +65.xlsx",
-        "SALUD OLA CALOR Exposición Base Daño -65": "SALUD OLA CALOR Exposición Base Daño -65.xlsx",
-    }
+# Diccionario con la correspondencia entre la descripción de los archivos y sus nombres
+archivos_base = {
+    "SALUD DIRECTO +65": "SALUD DIRECTO +65.xlsx",
+    "SALUD DIRECTO -65": "SALUD DIRECTO -65.xlsx",
+    "SALUD INDIRECTO": "SALUD INDIRECTO.xlsx",
+    "SALUD OLA CALOR +65": "SALUD OLA CALOR +65.xlsx",
+    "SALUD OLA CALOR -65": "SALUD OLA CALOR -65.xlsx",
+    "SALUD OLA CALOR Exposición Base Daño +65": "SALUD OLA CALOR Exposición Base Daño +65.xlsx",
+    "SALUD OLA CALOR Exposición Base Daño -65": "SALUD OLA CALOR Exposición Base Daño -65.xlsx",
+    "VIDA DIRECTO +65": "VIDA DIRECTO +65.xlsx",
+    "VIDA DIRECTO -65": "VIDA DIRECTO -65.xlsx",
+    "VIDA INDIRECTO": "VIDA INDIRECTO.xlsx",
+    "VIDA OLA CALOR +65": "VIDA OLA CALOR +65.xlsx",
+    "VIDA OLA CALOR -65": "VIDA OLA CALOR -65.xlsx",
+    "VIDA OLA CALOR Exposición Base Daño +65": "VIDA OLA CALOR Exposición Base Daño +65.xlsx",
+    "VIDA OLA CALOR Exposición Base Daño -65": "VIDA OLA CALOR Exposición Base Daño -65.xlsx",
+}
 
-    # Inicializar el diccionario en el estado de la sesión si aún no existe
-    if 'archivos_base' not in st.session_state:
-        st.session_state['archivos_base'] = {}
+# Inicializar el diccionario en el estado de la sesión si aún no existe
+if 'archivos_base' not in st.session_state:
+    st.session_state['archivos_base'] = {}
 
-    st.header("Cargar Archivos Base")
+st.header("Cargar Archivos Base")
 
-    # Input de contraseña
-    password_input = st.text_input("Introduce la contraseña para desencriptar los archivos:", type="password")
+# Input de contraseña
+password_input = st.text_input("Introduce la contraseña para desencriptar los archivos:", type="password")
 
-    if st.button("Desencriptar y cargar archivos base") and password_input:
-        # Obtener la 'salt' de los secretos de Streamlit
-        salt = base64.b64decode(st.secrets["MY_SALT_SECRET_KEY"])
-        key = generate_key_from_password(password_input, salt)
+if st.button("Desencriptar y cargar archivos base") and password_input:
+    # Obtener la 'salt' de los secretos de Streamlit
+    salt = base64.b64decode(st.secrets["MY_SALT_SECRET_KEY"])
+    key = generate_key_from_password(password_input, salt)
 
-        # Localizar el archivo encriptado en la misma carpeta del script
-        encrypted_zip_path = 'inputs_base.zip.enc'
-        
-        # Leer y desencriptar el contenido del archivo .zip.enc
-        with open(encrypted_zip_path, 'rb') as file:
-            encrypted_data = file.read()
-        decrypted_zip = decrypt_file(encrypted_data, key)
-        
-        if decrypted_zip:
-            with ZipFile(io.BytesIO(decrypted_zip), 'r') as zip_ref:
-                for descripcion, nombre_archivo in archivos_base.items():
-                    archivo_zip_ruta = f"Inputs Base/{nombre_archivo}"
-                    if archivo_zip_ruta in zip_ref.namelist():
-                        with zip_ref.open(archivo_zip_ruta) as file:
-                            content = io.BytesIO(file.read())
-                            df = pd.read_excel(content)
-                            st.session_state['archivos_base'][descripcion] = df
-                            st.success(f"{descripcion} cargado correctamente.")
-                    else:
-                        st.error(f"No se pudo encontrar el archivo {nombre_archivo}")
+    # Localizar el archivo encriptado en la misma carpeta del script
+    encrypted_zip_path = 'inputs_base.zip.enc'
+    
+    # Leer y desencriptar el contenido del archivo .zip.enc
+    with open(encrypted_zip_path, 'rb') as file:
+        encrypted_data = file.read()
+    decrypted_zip = decrypt_file(encrypted_data, key)
+    
+    if decrypted_zip:
+        with ZipFile(io.BytesIO(decrypted_zip), 'r') as zip_ref:
+            for descripcion, nombre_archivo in archivos_base.items():
+                archivo_zip_ruta = f"Inputs Base/{nombre_archivo}"
+                if archivo_zip_ruta in zip_ref.namelist():
+                    with zip_ref.open(archivo_zip_ruta) as file:
+                        content = io.BytesIO(file.read())
+                        df = pd.read_excel(content)
+                        st.session_state['archivos_base'][descripcion] = df
+                        st.success(f"{descripcion} cargado correctamente.")
+                else:
+                    st.error(f"No se pudo encontrar el archivo {nombre_archivo}")
 
-        else:
-            st.error("No se pudo desencriptar los archivos con esa contraseña.")
+    else:
+        st.error("No se pudo desencriptar los archivos con esa contraseña.")
+
+# Crear un expander que inicialmente está cerrado
+with st.expander("Haz clic para expandir y ver la aplicación de salud completa", expanded=False):
+
+    st.title("KLIM TOOL SALUD")
+
+    st.image('logo.PNG', width=120)
+
 
 
     ######################################## --- Sección para cargar los archivos de la compañía --- ############################3
@@ -525,84 +534,9 @@ with st.expander("Haz clic para expandir y ver la aplicación de vida completa",
 
         return df_vida_ola_calor_ajustada
 
-    st.title("KLIM TOOL")
+    st.title("KLIM TOOL VIDA")
 
     st.image('logo.PNG', width=120)
-    ##################################### --- Sección para cargar los archivos base --- ###################################################
-
-
-    # Definición de la función para generar la clave de encriptación
-    # Definición de la función para generar la clave de encriptación
-    # Definición de la función para generar la clave de encriptación
-    def generate_key_from_password(password, salt):
-        kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256(),
-            length=32,
-            salt=salt,
-            iterations=100000,
-            backend=default_backend()
-        )
-        generated_key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
-        return generated_key
-
-    # Función para desencriptar los datos
-    def decrypt_file(encrypted_data, key):
-        fernet = Fernet(key)
-        try:
-            decrypted_data = fernet.decrypt(encrypted_data)
-            return decrypted_data
-        except Exception as e:
-            st.error(f"No se pudo desencriptar el archivo: {e}")
-            return None
-
-    # Diccionario con la correspondencia entre la descripción de los archivos y sus nombres
-    archivos_base = {
-        "VIDA DIRECTO +65": "VIDA DIRECTO +65.xlsx",
-        "VIDA DIRECTO -65": "VIDA DIRECTO -65.xlsx",
-        "VIDA INDIRECTO": "VIDA INDIRECTO.xlsx",
-        "VIDA OLA CALOR +65": "VIDA OLA CALOR +65.xlsx",
-        "VIDA OLA CALOR -65": "VIDA OLA CALOR -65.xlsx",
-        "VIDA OLA CALOR Exposición Base Daño +65": "VIDA OLA CALOR Exposición Base Daño +65.xlsx",
-        "VIDA OLA CALOR Exposición Base Daño -65": "VIDA OLA CALOR Exposición Base Daño -65.xlsx",
-    }
-
-    # Inicializar el diccionario en el estado de la sesión si aún no existe
-    if 'archivos_base' not in st.session_state:
-        st.session_state['archivos_base'] = {}
-
-    st.header("Cargar Archivos Base")
-
-    # Input de contraseña
-    password_input = st.text_input("Introduce la contraseña para desencriptar los archivos:", type="password")
-
-    if st.button("Desencriptar y cargar archivos base") and password_input:
-        # Obtener la 'salt' de los secretos de Streamlit
-        salt = base64.b64decode(st.secrets["MY_SALT_SECRET_KEY"])
-        key = generate_key_from_password(password_input, salt)
-
-        # Localizar el archivo encriptado en la misma carpeta del script
-        encrypted_zip_path = 'inputs_base.zip.enc'
-        
-        # Leer y desencriptar el contenido del archivo .zip.enc
-        with open(encrypted_zip_path, 'rb') as file:
-            encrypted_data = file.read()
-        decrypted_zip = decrypt_file(encrypted_data, key)
-        
-        if decrypted_zip:
-            with ZipFile(io.BytesIO(decrypted_zip), 'r') as zip_ref:
-                for descripcion, nombre_archivo in archivos_base.items():
-                    archivo_zip_ruta = f"Inputs Base/{nombre_archivo}"
-                    if archivo_zip_ruta in zip_ref.namelist():
-                        with zip_ref.open(archivo_zip_ruta) as file:
-                            content = io.BytesIO(file.read())
-                            df = pd.read_excel(content)
-                            st.session_state['archivos_base'][descripcion] = df
-                            st.success(f"{descripcion} cargado correctamente.")
-                    else:
-                        st.error(f"No se pudo encontrar el archivo {nombre_archivo}")
-
-        else:
-            st.error("No se pudo desencriptar los archivos con esa contraseña.")
 
 
     ######################################## --- Sección para cargar los archivos de la compañía --- ############################3
