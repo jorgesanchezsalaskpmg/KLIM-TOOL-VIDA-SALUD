@@ -422,7 +422,7 @@ with st.expander("Haz clic para expandir y ver la aplicación de salud completa"
     # Almacenaremos la figura creada para poder cerrarla después de mostrarla. Esto previene el error 'RuntimeError: main thread is not in main loop' de Tkinter.
     fig = plt.figure(figsize=(10, 5))
 
-    if st.button('Mostrar Gráfico'):
+    if st.button('Mostrar Gráfico Salud'):
         if opcion_seleccionada in st.session_state['resultados']:
             df_seleccionado = st.session_state['resultados'][opcion_seleccionada]
 
