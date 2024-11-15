@@ -213,7 +213,7 @@ with st.expander("Haz clic para expandir y ver la aplicación de salud completa"
     if 'df_salud_exposicion_minus65' in st.session_state:
         dataframes_disponibles.append('SALUD Exposición -65')
 
-    selected_df_name = st.selectbox('Selecciona un DataFrame para visualizar:', dataframes_disponibles)
+    selected_df_name = st.selectbox('Selecciona un DataFrame de Salud para visualizar:', dataframes_disponibles)
 
     # Acción del botón para mostrar el DataFrame seleccionado
     if st.button('Mostrar DataFrame Salud'):
@@ -241,7 +241,7 @@ with st.expander("Haz clic para expandir y ver la aplicación de salud completa"
         # Write BytesIO object to the zipfile
         zip_obj.writestr(filename, excel_bytesio.getvalue())
 
-    st.header('Ejecutar Proyecciones y Exportar a Excel')
+    st.header('Ejecutar Proyecciones de Salud y Exportar a Excel')
 
     def ejecutar_calculos():
         try:
